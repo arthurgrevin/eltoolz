@@ -1,11 +1,12 @@
 from meteo_jobs.extract import Extract, ExtractMeteoDataCSV
 from meteo_jobs.load import Loader, PostgresConnector, PostgresQueriesMeteo
+from meteo_jobs.logger import get_logger
 import os
 import re
 import argparse
 
+logger = get_logger(__name__)
 
-print("Start Extract and Load Meteo Data to Postgres")
 
 if __name__ == "__main__":
 
@@ -27,6 +28,8 @@ if __name__ == "__main__":
     if args.station:
         station = args.station
 
+    logger.info(f"Extract and Load starts for {station}")
+
     api_url =  f"https://data.toulouse-metropole.fr/api/explore/v2.1/catalog/datasets/{station}/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B"
     extract = Extract(ExtractMeteoDataCSV(api_url))
     connector = PostgresConnector(
@@ -44,4 +47,4 @@ if __name__ == "__main__":
     loader.upsert_records(meteos)
     loader.close()
 
-    print("End of Extract and Load")
+    logger.info("Extract and Load ends for {station}")

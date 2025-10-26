@@ -1,7 +1,9 @@
 from meteo_jobs.load import PostgresConnector, Loader, PostgresQueriesStation
 from meteo_jobs.models import Station
+from meteo_jobs.logger import get_logger
 import pytest
 
+logger = get_logger(__name__)
 
 records_test = [{"id_numero":38,
                  "id_nom":'38-station-meteo-toulouse-parc-jardin-des-plantes-grand-rond',
@@ -29,12 +31,10 @@ loader = Loader(connector)
 
 @pytest.fixture(scope="module", autouse=True)
 def cleanup():
-    # Code exécuté avant les tests
-    print("Setup  before tests")
+    logger.info("Setup  before tests")
     yield
-    # Code exécuté après tous les tests du module
     loader.close()
-    print("After Tests")
+    logger.info("After Tests")
 
 def test_load_station():
     """
@@ -58,6 +58,5 @@ def test_load_station():
     stations = iter([station])
     loader.upsert_records(stations)
     records = loader.read_data()
-    print(records)
     assert len(records) == 1
     loader.close()

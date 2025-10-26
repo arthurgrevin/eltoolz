@@ -1,7 +1,10 @@
 from meteo_jobs.load import PostgresConnector, Loader, PostgresQueriesMeteo
 from meteo_jobs.models import Meteo
+from meteo_jobs.logger import get_logger
 import pytest
 
+
+logger = get_logger(__name__)
 
 records_test = [{'data': '0195236c9af000002c882c00',
                'id': 0,
@@ -31,12 +34,12 @@ loader = Loader(connector)
 
 @pytest.fixture(scope="module", autouse=True)
 def cleanup():
-    # Code exécuté avant les tests
-    print("Setup  before tests")
+
+    logger.info("Setup before tests")
     yield
-    # Code exécuté après tous les tests du module
+
     loader.close()
-    print("After Tests")
+    logger.info("After Tests")
 
 def test_load_meteo():
     """
@@ -62,6 +65,5 @@ def test_load_meteo():
     meteos = iter([meteo])
     loader.upsert_records(meteos)
     records = loader.read_data()
-    print(records)
     assert len(records) == 1
     loader.close()

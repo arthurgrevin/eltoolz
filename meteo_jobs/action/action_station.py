@@ -1,9 +1,11 @@
 from .action import Action
 from typing import Iterator
 from meteo_jobs.models import Station
+from meteo_jobs.logger import get_logger
 import subprocess
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
+logger = get_logger(__name__)
 
 class ActionStation(Action):
 
@@ -14,7 +16,7 @@ class ActionStation(Action):
         """Launch a process to start extract meteo for one station"""
         log_file = f"{station_name}_extract.log"
         cmd = ["python3.12", "start_EL_meteo.py", "--station", station_name]
-        print(f"Launch for {station_name}")
+        logger.info(f"Start EL for {station_name}")
         result = subprocess.run(cmd, capture_output=True, text=True)
         with open(log_file, "w") as f:
             result = subprocess.run(
@@ -23,7 +25,7 @@ class ActionStation(Action):
                 stderr=subprocess.STDOUT,  # redirige stderr aussi
                 text=True
             )
-        print(f"End for {station_name}")
+        logger.info(f"End EL for {station_name}")
         return station_name, result.returncode, log_file, result.stderr
 
 
@@ -38,7 +40,7 @@ class ActionStation(Action):
         for future in as_completed(futures):
                 station = futures[future]
                 name, code, out, err = future.result()
-                print(f"{name} is finished with {code}")
+                logger.info(f"{name} is finished with {code}")
                 if err:
-                     print(f"{name} error with {err}")
+                     logger.error(f"{name} error with {err}")
                 yield station

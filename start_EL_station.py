@@ -2,10 +2,11 @@ from meteo_jobs.extract import Extract, ExtractStationDataCSV
 from meteo_jobs.models import Station
 from meteo_jobs.load import Loader, PostgresConnector, PostgresQueriesStation
 from meteo_jobs.action import ActionExecutor, ActionStation
+from meteo_jobs.logger import get_logger
 from typing import Iterator
 import os
 
-print("Start Extract and Load Meteo Data to Postgres")
+logger = get_logger(__name__)
 
 
 def extract_stations(extract: Extract) -> Iterator[Station]:
@@ -23,6 +24,8 @@ def load_station(loader: Loader,
 
 
 if __name__ == "__main__":
+
+    logger("Extract and Load Station starts")
 
     API_ID = os.getenv("API_ID")
     DB_HOST = os.getenv("DB_HOST")
@@ -47,7 +50,7 @@ if __name__ == "__main__":
     load_station(loader, stations)
     first_10_stations = station_postgres.parse_data(iter(loader.read_data()[:3]))
     for r in launch_process(action_executor, first_10_stations):
-        print("action done")
+        logger.info("Action done")
     loader.close()
 
-    print("End of Extract and Load")
+    logger.info("Extract and Load ends")

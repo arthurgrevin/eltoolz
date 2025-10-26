@@ -3,6 +3,9 @@ from psycopg2.extras import execute_values
 from itertools import islice
 from typing import Iterator
 from .connector import DbQueries, Connector
+from meteo_jobs.logger import get_logger
+
+logger = get_logger(__name__)
 
 class PostgresConnector(Connector):
 
@@ -11,7 +14,7 @@ class PostgresConnector(Connector):
                  dbname:str,
                  user:str,
                  password:str,
-                 db_queries = DbQueries):
+                 db_queries: DbQueries):
         """"""
         super().__init__(host=host,
                          port=port,
@@ -46,7 +49,7 @@ class PostgresConnector(Connector):
         :param records: iterator
         """
         if not records:
-            print("No records to upsert")
+            logger.info("No records to upsert, records is empty")
             return
         while True:
             batch = list(islice(records, batch_size))
@@ -57,8 +60,8 @@ class PostgresConnector(Connector):
             with self.conn.cursor() as cur:
                 execute_values(cur, self.db_queries.query_upsert_records(), values)
             self.conn.commit()
-            print(f"{len(batch)} records upsert in PostgreSQL")
-        print("End of upsert")
+            logger.info(f"{len(batch)} records upsert in PostgreSQL")
+        logger.info("End of upsert")
 
     def read_table(self):
         with self.conn.cursor() as cur:
@@ -70,4 +73,4 @@ class PostgresConnector(Connector):
         """Close Database connection"""
         if self.conn:
             self.conn.close()
-            print("Connexion PostgreSQL closed")
+            logger.info("Connexion PostgreSQL closed")
