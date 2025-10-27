@@ -6,6 +6,7 @@ class DbQueries:
     def __init__(self, params: dict = {}):
         """"""
         self.params = params
+        self.schema = "raw"
 
     def query_create_table(self)->str:
         """Get Query to create table"""

@@ -25,7 +25,7 @@ def load_station(loader: Loader,
 
 if __name__ == "__main__":
 
-    logger("Extract and Load Station starts")
+    logger.info("Extract and Load Station starts")
 
     API_ID = os.getenv("API_ID")
     DB_HOST = os.getenv("DB_HOST")

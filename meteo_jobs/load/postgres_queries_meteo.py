@@ -10,7 +10,7 @@ class PostgresQueriesMeteo(DbQueries):
 
     def query_create_table(self):
         return f"""
-                CREATE TABLE IF NOT EXISTS meteo_{self.station} (
+                CREATE TABLE IF NOT EXISTS {self.schema}.meteo_{self.station} (
                             data VARCHAR(255) PRIMARY KEY,
                             id INT,
                             direction_du_vecteur_de_vent_max INT,
@@ -31,11 +31,11 @@ class PostgresQueriesMeteo(DbQueries):
                 """
 
     def query_read_table(self):
-        return f"SELECT * FROM meteo_{self.station}"
+        return f"SELECT * FROM {self.schema}.meteo_{self.station}"
 
     def query_upsert_records(self):
         return f"""
-    INSERT INTO meteo_{self.station}(
+    INSERT INTO {self.schema}.meteo_{self.station}(
             data,
             id,
             direction_du_vecteur_de_vent_max,

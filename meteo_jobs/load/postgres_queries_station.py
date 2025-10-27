@@ -3,9 +3,10 @@ from typing import Iterator
 from .connector import DbQueries
 
 class PostgresQueriesStation(DbQueries):
+
     def query_create_table(self):
-        return """
-                CREATE TABLE IF NOT EXISTS station (
+        return f"""
+                CREATE TABLE IF NOT EXISTS {self.schema}.station (
                             id_numero SERIAL PRIMARY KEY,
                             id_nom VARCHAR(255),
                             longitude FLOAT,
@@ -24,11 +25,11 @@ class PostgresQueriesStation(DbQueries):
                 """
 
     def query_read_table(self):
-        return "SELECT * FROM station ORDER BY id_numero"
+        return f"SELECT * FROM {self.schema}.station ORDER BY id_numero"
 
     def query_upsert_records(self):
-        return """
-    INSERT INTO station(
+        return f"""
+    INSERT INTO {self.schema}.station(
             id_numero,
             id_nom,
             longitude,
