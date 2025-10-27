@@ -1,0 +1,12 @@
+transform:
+  outputs:
+    dev:
+      dbname: meteo_db
+      host: 127.0.0.1
+      pass: "meteo_pass"
+      port: 5432
+      schema: ""
+      threads: 1
+      type: postgres
+      user: meteo_user
+  target: dev
