@@ -53,7 +53,24 @@ class PostgresQueriesMeteo(DbQueries):
             direction_du_vecteur_vent_moyen
         )
         VALUES %s
-        ON CONFLICT (data) DO NOTHING
+        ON CONFLICT (data) DO UPDATE SET
+            id = EXCLUDED.id,
+            direction_du_vecteur_de_vent_max =
+                EXCLUDED.direction_du_vecteur_de_vent_max,
+            pluie_intensite_max = EXCLUDED.pluie_intensite_max,
+            type_de_station = EXCLUDED.type_de_station,
+            direction_du_vecteur_de_rafale_de_vent_max =
+                EXCLUDED.direction_du_vecteur_de_rafale_de_vent_max,
+            force_moyenne_du_vecteur_vent = EXCLUDED.force_moyenne_du_vecteur_vent,
+            force_rafale_max = EXCLUDED.force_rafale_max,
+            temperature = EXCLUDED.temperature,
+            humidite = EXCLUDED.humidite,
+            pression = EXCLUDED.pression,
+            pluie = EXCLUDED.pluie,
+            heure_utc = EXCLUDED.heure_utc,
+            heure_de_paris = EXCLUDED.heure_de_paris,
+            direction_du_vecteur_vent_moyen =
+                EXCLUDED.direction_du_vecteur_vent_moyen;
 """
     def get_values(self, records: Iterator[Meteo]) -> list:
         values = [

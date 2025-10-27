@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - add logger
 - Transform: add schema in postgres connector (raw, marts)
+- Transform: add Dbt, staging/station model
+- Extract-Load: Add Job model, and postgre implementation
 
 
 ### Changed

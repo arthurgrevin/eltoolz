@@ -45,7 +45,20 @@ class PostgresQueriesStation(DbQueries):
             geopoint
         )
         VALUES %s
-        ON CONFLICT (id_numero) DO NOTHING
+        ON CONFLICT (id_numero) DO UPDATE SET
+            id_nom = EXCLUDED.id_nom,
+            longitude = EXCLUDED.longitude,
+            latitude = EXCLUDED.latitude,
+            altitude = EXCLUDED.altitude,
+            emission = EXCLUDED.emission,
+            installation = EXCLUDED.installation,
+            type_stati = EXCLUDED.type_stati,
+            lcz = EXCLUDED.lcz,
+            ville = EXCLUDED.ville,
+            bati = EXCLUDED.bati,
+            veg_haute = EXCLUDED.veg_haute,
+            geopoint = EXCLUDED.geopoint
+
 """
 
     def get_values(self, records: Iterator[Station]) -> list:
