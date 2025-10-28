@@ -1,6 +1,6 @@
 from meteo_jobs.models import Meteo
 from typing import Iterator
-from .connector import DbQueries
+from ..core.connector_db import DbQueries
 
 class PostgresQueriesMeteo(DbQueries):
 
@@ -94,3 +94,29 @@ class PostgresQueriesMeteo(DbQueries):
             for r in records
         ]
         return values
+
+    def parse_data(self, records: Iterator)-> Iterator[Meteo]:
+         meteos = [
+              (
+                   Meteo(
+                        r[0],
+                        r[1],
+                        r[2],
+                        r[3],
+                        r[4],
+                        r[5],
+                        r[6],
+                        r[7],
+                        r[8],
+                        r[9],
+                        r[10],
+                        r[11],
+                        r[12],
+                        r[13],
+                        r[14]
+                        )
+              )
+
+              for r in records
+         ]
+         return meteos

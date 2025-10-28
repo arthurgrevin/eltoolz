@@ -1,4 +1,5 @@
-from typing import Protocol, Iterator
+from typing import Iterator
+from .connector import Connector
 
 
 class DbQueries:
@@ -20,10 +21,10 @@ class DbQueries:
     def get_values(self, records: Iterator) -> list:
         """format records to values to be loaded"""
 
-    def parse_data(self, result: list) -> list:
+    def parse_data(self, records: Iterator) -> Iterator:
         """parse query result into model"""
 
-class Connector(Protocol):
+class ConnectorDB(Connector):
 
     def __init__(self, host:str,
                  port:int,
@@ -46,11 +47,14 @@ class Connector(Protocol):
     def create_table(self):
         """Create Table to load Data"""
 
-    def read_table(self) -> list:
+    def read_data(self) -> list:
         """read table"""
 
     def upsert_records(self, records: Iterator, batch_size:int =10000):
         """Upsert Data"""
+
+    def parse_data(self, records: Iterator) -> Iterator:
+        """parse query result into model"""
 
     def close(self):
         """Close connection"""

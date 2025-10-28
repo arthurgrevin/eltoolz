@@ -1,6 +1,8 @@
-from meteo_jobs.load import PostgresConnector, Loader, PostgresQueriesJob
+from meteo_jobs.load import Loader
+from meteo_jobs.connector.postgres import PostgresConnector, PostgresQueriesJob
 from meteo_jobs.models import Job
 from meteo_jobs.logger import get_logger
+from meteo_jobs.extract import Extract
 import pytest
 from datetime import date
 
@@ -17,6 +19,7 @@ connector = PostgresConnector(
         db_queries= PostgresQueriesJob()
     )
 loader = Loader(connector)
+extract = Extract(connector)
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -38,6 +41,6 @@ def test_load_job():
     )
     jobs = iter([job])
     loader.upsert_records(jobs)
-    records = loader.read_data()
+    records = extract.fetch_data()
     assert len(records) == 1
     loader.close()

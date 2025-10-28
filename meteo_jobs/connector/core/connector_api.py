@@ -1,17 +1,18 @@
 import requests
-from typing import Protocol, Iterator
+from typing import Iterator
 from meteo_jobs.logger import get_logger
+from .connector import Connector
 
 
 logger = get_logger(__name__)
 
-class ExtractAPI(Protocol):
+class ConnectorAPI(Connector):
 
     def __init__(self, api_url: str):
         self.api_url = api_url
 
 
-    def fetch_data(self, is_stream: bool, options: dict) -> Iterator:
+    def read_data(self, is_stream: bool, options: dict) -> Iterator:
         """
             fetch data using api_url
         """

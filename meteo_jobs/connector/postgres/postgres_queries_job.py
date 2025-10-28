@@ -1,6 +1,6 @@
 from meteo_jobs.models import Job
 from typing import Iterator
-from .connector import DbQueries
+from ..core.connector_db import DbQueries
 
 class PostgresQueriesJob(DbQueries):
 
@@ -42,3 +42,18 @@ class PostgresQueriesJob(DbQueries):
             for r in records
         ]
         return values
+
+    def parse_data(self, records: Iterator) -> Iterator[Job]:
+        jobs = [
+              (
+                   Job(
+                        r[0],
+                        r[1],
+                        r[2],
+                        r[3]
+                        )
+              )
+
+              for r in records
+         ]
+        return jobs

@@ -1,6 +1,6 @@
 from meteo_jobs.models import Station
 from typing import Iterator
-from .connector import DbQueries
+from ..core.connector_db import DbQueries
 
 class PostgresQueriesStation(DbQueries):
 
@@ -45,19 +45,7 @@ class PostgresQueriesStation(DbQueries):
             geopoint
         )
         VALUES %s
-        ON CONFLICT (id_numero) DO UPDATE SET
-            id_nom = EXCLUDED.id_nom,
-            longitude = EXCLUDED.longitude,
-            latitude = EXCLUDED.latitude,
-            altitude = EXCLUDED.altitude,
-            emission = EXCLUDED.emission,
-            installation = EXCLUDED.installation,
-            type_stati = EXCLUDED.type_stati,
-            lcz = EXCLUDED.lcz,
-            ville = EXCLUDED.ville,
-            bati = EXCLUDED.bati,
-            veg_haute = EXCLUDED.veg_haute,
-            geopoint = EXCLUDED.geopoint
+        ON CONFLICT (id_numero) DO NOTHING
 
 """
 
@@ -82,7 +70,7 @@ class PostgresQueriesStation(DbQueries):
             ]
             return values
 
-    def parse_data(self, result)->list[Station]:
+    def parse_data(self, records: Iterator)-> Iterator[Station]:
          stations = [
               (
                    Station(
@@ -101,6 +89,6 @@ class PostgresQueriesStation(DbQueries):
                         r[12])
               )
 
-              for r in result
+              for r in records
          ]
          return stations

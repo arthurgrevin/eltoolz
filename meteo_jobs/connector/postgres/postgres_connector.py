@@ -2,12 +2,12 @@ import psycopg2
 from psycopg2.extras import execute_values
 from itertools import islice
 from typing import Iterator
-from .connector import DbQueries, Connector
+from ..core.connector_db import DbQueries, ConnectorDB
 from meteo_jobs.logger import get_logger
 
 logger = get_logger(__name__)
 
-class PostgresConnector(Connector):
+class PostgresConnector(ConnectorDB):
 
     def __init__(self, host:str,
                  port:int,
@@ -63,11 +63,14 @@ class PostgresConnector(Connector):
             logger.info(f"{len(batch)} records upsert in PostgreSQL")
         logger.info("End of upsert")
 
-    def read_table(self):
+    def read_data(self):
         with self.conn.cursor() as cur:
             cur.execute(self.db_queries.query_read_table())
             rows = cur.fetchall()
-        return rows
+        return iter(rows)
+
+    def parse_data(self, records: Iterator):
+        return self.db_queries.parse_data(records)
 
     def close(self):
         """Close Database connection"""
