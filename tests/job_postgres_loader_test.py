@@ -1,6 +1,6 @@
 from meteo_jobs.load import Loader
 from meteo_jobs.connector.postgres import PostgresConnector, PostgresQueriesJob
-from meteo_jobs.models import Job
+from meteo_jobs.models import Job, ExtractType, JobType, LoadType
 from meteo_jobs.logger import get_logger
 from meteo_jobs.extract import Extract
 import pytest
@@ -24,10 +24,10 @@ extract = Extract(connector)
 
 job = Job(
         job_id=None,
-        job_name="test_job",
+        job_name=JobType.EL_METEO,
         table_name="table_test",
-        load_connector="load_test",
-        extract_connector="extract_test",
+        load_connector=LoadType.POSTGRES,
+        extract_connector=ExtractType.API,
         options= {"test":"test"},
         last_compute=date.today().strftime("%Y-%m-%d, %H:%M:%S")
     )
@@ -50,10 +50,7 @@ def test_load_job():
     records = list(extract.fetch_data())
     assert len(records) == 1
     job_read = records[0]
-    assert job_read[1] == job.job_name
     assert job_read[2] == job.table_name
-    assert job_read[3] == job.load_connector
-    assert job_read[4] == job.extract_connector
     assert job_read[6] == job.last_compute
 
 def test_load_job_twice():

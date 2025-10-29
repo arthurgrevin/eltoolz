@@ -1,4 +1,5 @@
-from meteo_jobs.models import Job
+from meteo_jobs.models import Job, ExtractType, LoadType, JobType
+from meteo_jobs.utils import EnumUtils
 from typing import Iterator
 from ..core.connector_db import DbQueries
 import json
@@ -49,10 +50,10 @@ class PostgresQueriesJob(DbQueries):
     def get_values(self, records: Iterator[Job]) -> list:
         values = [
             (
-                r.job_name,
+                r.job_name.value,
                 r.table_name,
-                r.load_connector,
-                r.extract_connector,
+                r.load_connector.value,
+                r.extract_connector.value,
                 json.dumps(r.options),
                 r.last_compute
             )
@@ -65,13 +66,13 @@ class PostgresQueriesJob(DbQueries):
               (
                    Job(
                         r[0],
-                        r[1],
+                        EnumUtils.parse_enum(JobType, r[1]),
                         r[2],
-                        r[3],
-                        r[4],
+                        EnumUtils.parse_enum(LoadType, r[3]),
+                        EnumUtils.parse_enum(ExtractType, r[4]),
                         json.loads(r[5]),
-                        r[6]
-                        )
+                        r[6],
+                      )
               )
 
               for r in records

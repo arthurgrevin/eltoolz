@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Transform: add Dbt, staging/station model
 - Extract-Load: Add Job model, and postgre implementation
 - Refact: Create Connector Protocol
+- Create ExtractType, LoadType, JobType for Job
 
 
 ### Changed
