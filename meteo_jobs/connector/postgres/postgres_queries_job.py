@@ -1,6 +1,7 @@
 from meteo_jobs.models import Job
 from typing import Iterator
 from ..core.connector_db import DbQueries
+import json
 
 class PostgresQueriesJob(DbQueries):
 
@@ -16,6 +17,9 @@ class PostgresQueriesJob(DbQueries):
                             job_id SERIAL PRIMARY KEY,
                             job_name VARCHAR(255),
                             table_name VARCHAR(255),
+                            load_connector VARCHAR(255),
+                            extract_connector VARCHAR(255),
+                            options TEXT,
                             last_compute VARCHAR(255),
                             UNIQUE(job_name, table_name)
                         );
@@ -29,17 +33,27 @@ class PostgresQueriesJob(DbQueries):
     INSERT INTO core.job(
             job_name,
             table_name,
+            load_connector,
+            extract_connector,
+            options,
             last_compute
         )
         VALUES %s
         ON CONFLICT (job_name,table_name) DO UPDATE SET
-            last_compute = EXCLUDED.last_compute
+            last_compute = EXCLUDED.last_compute,
+            load_connector = EXCLUDED.load_connector,
+            extract_connector = EXCLUDED.extract_connector,
+            options = EXCLUDED.options
+
 """
     def get_values(self, records: Iterator[Job]) -> list:
         values = [
             (
                 r.job_name,
                 r.table_name,
+                r.load_connector,
+                r.extract_connector,
+                json.dumps(r.options),
                 r.last_compute
             )
             for r in records
@@ -53,7 +67,10 @@ class PostgresQueriesJob(DbQueries):
                         r[0],
                         r[1],
                         r[2],
-                        r[3]
+                        r[3],
+                        r[4],
+                        json.loads(r[5]),
+                        r[6]
                         )
               )
 
