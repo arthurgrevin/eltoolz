@@ -1,8 +1,8 @@
-from typing import Iterator
+from typing import Iterator, Protocol
 from .connector import Connector
 
 
-class DbQueries:
+class DbQueries(Protocol):
 
     def __init__(self, params: dict = {}):
         """"""
@@ -20,6 +20,9 @@ class DbQueries:
 
     def get_values(self, records: Iterator) -> list:
         """format records to values to be loaded"""
+
+    def query_delete_table(self)->str:
+        """delete table"""
 
     def parse_data(self, records: Iterator) -> Iterator:
         """parse query result into model"""
@@ -55,6 +58,9 @@ class ConnectorDB(Connector):
 
     def parse_data(self, records: Iterator) -> Iterator:
         """parse query result into model"""
+
+    def delete_table(self):
+        """delete table (for testing)"""
 
     def close(self):
         """Close connection"""

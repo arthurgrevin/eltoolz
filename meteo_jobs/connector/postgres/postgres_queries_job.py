@@ -7,6 +7,9 @@ class PostgresQueriesJob(DbQueries):
     def __init__(self):
         super().__init__()
 
+    def query_delete_table(self)->str:
+        return "DROP TABLE IF EXISTS core.job"
+
     def query_create_table(self):
         return """
                 CREATE TABLE IF NOT EXISTS core.job (

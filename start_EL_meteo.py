@@ -46,6 +46,7 @@ if __name__ == "__main__":
     loader = Loader(connector)
     records = extract.fetch_data()
     meteos = extract.parse_data(records)
+    loader.create_table()
     loader.upsert_records(meteos)
     loader.close()
 

@@ -9,5 +9,11 @@ class Loader:
     def upsert_records(self, records: Iterator):
         return self.connector.upsert_records(records)
 
+    def delete_table(self):
+        return self.connector.delete_table()
+
+    def create_table(self):
+        return self.connector.create_table()
+
     def close(self):
         return self.connector.close()

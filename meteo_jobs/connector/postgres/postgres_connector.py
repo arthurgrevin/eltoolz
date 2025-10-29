@@ -23,10 +23,6 @@ class PostgresConnector(ConnectorDB):
                          password=password,
                          db_queries=db_queries)
         self.conn = self.connect()
-        self.create_table()
-
-
-
 
     def connect(self):
         return psycopg2.connect(
@@ -71,6 +67,11 @@ class PostgresConnector(ConnectorDB):
 
     def parse_data(self, records: Iterator):
         return self.db_queries.parse_data(records)
+
+    def delete_table(self):
+        query = self.db_queries.query_delete_table()
+        with self.conn.cursor() as cur:
+            cur.execute(query)
 
     def close(self):
         """Close Database connection"""

@@ -7,10 +7,14 @@ class PostgresQueriesMeteo(DbQueries):
     def __init__(self, params: dict):
         super().__init__()
         self.station = params["station"]
+        self.table_name = f"{self.schema}.meteo_{self.station}"
+
+    def query_delete_table(self)->str:
+        return f"DROP TABLE IF EXISTS {self.table_name}"
 
     def query_create_table(self):
         return f"""
-                CREATE TABLE IF NOT EXISTS {self.schema}.meteo_{self.station} (
+                CREATE TABLE IF NOT EXISTS {self.table_name} (
                             data VARCHAR(255) PRIMARY KEY,
                             id INT,
                             direction_du_vecteur_de_vent_max INT,
@@ -31,11 +35,11 @@ class PostgresQueriesMeteo(DbQueries):
                 """
 
     def query_read_table(self):
-        return f"SELECT * FROM {self.schema}.meteo_{self.station}"
+        return f"SELECT * FROM {self.table_name}"
 
     def query_upsert_records(self):
         return f"""
-    INSERT INTO {self.schema}.meteo_{self.station}(
+    INSERT INTO {self.table_name}(
             data,
             id,
             direction_du_vecteur_de_vent_max,
@@ -101,19 +105,19 @@ class PostgresQueriesMeteo(DbQueries):
                    Meteo(
                         r[0],
                         r[1],
-                        r[2],
+                        r[9],
                         r[3],
+                        r[10],
                         r[4],
+                        r[11],
+                        r[2],
                         r[5],
+                        r[14],
                         r[6],
                         r[7],
                         r[8],
-                        r[9],
-                        r[10],
-                        r[11],
                         r[12],
-                        r[13],
-                        r[14]
+                        r[13]
                         )
               )
 

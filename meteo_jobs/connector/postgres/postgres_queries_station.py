@@ -24,6 +24,9 @@ class PostgresQueriesStation(DbQueries):
                         );
                 """
 
+    def query_delete_table(self)->str:
+         return f"DROP TABLE IF EXISTS {self.schema}.station"
+
     def query_read_table(self):
         return f"SELECT * FROM {self.schema}.station ORDER BY id_numero"
 

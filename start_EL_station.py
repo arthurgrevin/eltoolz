@@ -51,6 +51,7 @@ if __name__ == "__main__":
     extractPostgres = Extract(connector)
     #action_executor = ActionExecutor(ActionStation())
     stations = extract_stations(extractCSV)
+    loader.create_table()
     load_station(loader, stations)
     first_10_stations = islice(
         extractPostgres.parse_data(extractPostgres.fetch_data()), 10)
