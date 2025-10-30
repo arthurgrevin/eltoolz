@@ -43,6 +43,7 @@ extract = Extract(connector)
 def cleanup():
 
     logger.info("Setup before tests")
+    loader.connect()
     loader.delete_table()
     loader.create_table()
     yield

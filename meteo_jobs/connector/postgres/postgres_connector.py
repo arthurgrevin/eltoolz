@@ -23,7 +23,7 @@ class PostgresConnector(ConnectorDB):
                          user=user,
                          password=password,
                          db_queries=db_queries)
-        self.conn = self.connect()
+        self.conn = None
 
     def connect(self) -> Result[str, str]:
         try:

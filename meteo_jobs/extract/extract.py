@@ -15,3 +15,9 @@ class Extract:
     def parse_data(self, records: Iterator) -> Iterator:
         """Parse Data using ExtractAPI implementation"""
         return self.connector.parse_data(records)
+
+    def connect(self):
+        return self.connector.connect()
+
+    def close(self):
+        return self.connector.close()

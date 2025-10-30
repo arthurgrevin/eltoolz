@@ -12,6 +12,14 @@ import os
 
 logger = get_logger(__name__)
 
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+DB_NAME = os.getenv("DB_NAME")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWD = os.getenv("DB_PASSWD")
+API_ID = os.getenv("API_ID")
+
+
 def get_jobs(extract: Extract)->Iterator[Job]:
     records = extract.fetch_data()
     jobs = extract.parse_data(records)
@@ -24,6 +32,7 @@ def bootstrap(loader: Loader, api_id: str):
     Push station to be compute.
     """
     api_url = f"https://data.toulouse-metropole.fr/api/explore/v2.1/catalog/datasets/{api_id}/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B"
+    loader.connect()
     loader.create_table()
     job_station = Job(
         None,
@@ -31,19 +40,18 @@ def bootstrap(loader: Loader, api_id: str):
         "station",
         LoadType.POSTGRES,
         ExtractType.API,
-        {"api_url": api_url},
+        {"api_url": api_url,
+         "db_host": DB_HOST,
+         "db_port": DB_PORT,
+         "db_name": DB_NAME,
+         "db_password": DB_PASSWD,
+         "db_user": DB_USER},
         ""
     )
     loader.upsert_records(iter([job_station]))
+    loader.close()
 
 if __name__ == "__main__":
-
-    DB_HOST = os.getenv("DB_HOST")
-    DB_PORT = os.getenv("DB_PORT")
-    DB_NAME = os.getenv("DB_NAME")
-    DB_USER = os.getenv("DB_USER")
-    DB_PASSWD = os.getenv("DB_PASSWD")
-    API_ID = os.getenv("API_ID")
 
     logger.info("Start Orchestrator")
 
@@ -58,10 +66,11 @@ if __name__ == "__main__":
     extract = Extract(connector)
     loader = Loader(connector)
     bootstrap(loader, API_ID)
+    extract.connect()
     jobs = get_jobs(extract)
     if not any(jobs):
         logger.info("No Jobs in core.job table")
-    for job in get_jobs(extract):
+    for job in jobs:
         logger.info(f"""
                     Job job_id: {job.job_id},
                     job_name: {job.job_name},
@@ -71,5 +80,5 @@ if __name__ == "__main__":
                     last_compute: {job.last_compute}
 
         """)
-
-    loader.close()
+    extract.close()
+    logger.info("End of Orchestrator")

@@ -15,5 +15,8 @@ class Loader:
     def create_table(self):
         return self.connector.create_table()
 
+    def connect(self):
+        return self.connector.connect()
+
     def close(self):
         return self.connector.close()

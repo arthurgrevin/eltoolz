@@ -36,6 +36,7 @@ job = Job(
 @pytest.fixture(scope="module", autouse=True)
 def cleanup():
     logger.info("Setup  before tests")
+    loader.connect()
     loader.delete_table()
     loader.create_table()
     yield
