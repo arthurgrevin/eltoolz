@@ -8,13 +8,14 @@ class PostgresQueriesJob(DbQueries):
 
     def __init__(self):
         super().__init__()
+        self.full_table_name = "core.job"
 
     def query_delete_table(self)->str:
-        return "DROP TABLE IF EXISTS core.job"
+        return f"DROP TABLE IF EXISTS {self.full_table_name}"
 
     def query_create_table(self):
-        return """
-                CREATE TABLE IF NOT EXISTS core.job (
+        return f"""
+                CREATE TABLE IF NOT EXISTS {self.full_table_name} (
                             job_id SERIAL PRIMARY KEY,
                             job_name VARCHAR(255),
                             table_name VARCHAR(255),
@@ -30,8 +31,8 @@ class PostgresQueriesJob(DbQueries):
         return "SELECT * FROM core.job"
 
     def query_upsert_records(self):
-        return """
-    INSERT INTO core.job(
+        return f"""
+    INSERT INTO {self.full_table_name}(
             job_name,
             table_name,
             load_connector,

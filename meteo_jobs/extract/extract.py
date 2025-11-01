@@ -1,5 +1,6 @@
 from meteo_jobs.connector.core import Connector
 from typing import Iterator
+from returns.result import Result
 
 class Extract:
 
@@ -7,7 +8,7 @@ class Extract:
         self.connector = connector
 
 
-    def fetch_data(self) -> Iterator:
+    def fetch_data(self) -> Result[Iterator, str]:
         """Fetch data using ExtractAPI implementation"""
         return self.connector.read_data()
 

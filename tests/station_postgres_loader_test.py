@@ -3,6 +3,7 @@ from meteo_jobs.extract import Extract
 from meteo_jobs.connector.postgres import PostgresConnector, PostgresQueriesStation
 from meteo_jobs.models import Station
 from meteo_jobs.logger import get_logger
+from returns.result import Success
 import pytest
 import copy
 
@@ -49,8 +50,10 @@ def test_load_station():
     it should be able to upsert a station data
     """
     stations = iter([station])
-    loader.upsert_records(stations)
-    records = list(extract.fetch_data())
+    assert isinstance(loader.upsert_records(stations), Success)
+    result_fetch = extract.fetch_data()
+    assert isinstance(result_fetch, Success)
+    records = list(result_fetch.unwrap())
     assert len(records) == 1
 
 
@@ -62,9 +65,11 @@ def test_conflict_on_upsert():
     station_new.id_nom = "new"
     stations = iter([station])
     stations_new = iter([station_new])
-    loader.upsert_records(stations)
-    loader.upsert_records(stations_new)
-    stations = list(extract.parse_data(extract.fetch_data()))
+    assert isinstance(loader.upsert_records(stations), Success)
+    assert isinstance(loader.upsert_records(stations_new), Success)
+    results_fetch  = extract.fetch_data()
+    assert isinstance(results_fetch, Success)
+    stations = list(extract.parse_data(results_fetch.unwrap()))
     assert len(stations) == 1
     station_read = stations[0]
     station_read.id_nom = "new"
@@ -72,8 +77,10 @@ def test_conflict_on_upsert():
 
 def test_parse_station():
     stations = iter([station])
-    loader.upsert_records(stations)
-    stations = list(extract.parse_data(extract.fetch_data()))
+    assert isinstance(loader.upsert_records(stations), Success)
+    results_fetch  = extract.fetch_data()
+    assert isinstance(results_fetch, Success)
+    stations = list(extract.parse_data(results_fetch.unwrap()))
     assert len(stations) == 1
     station_read = stations[0]
     assert station_read.id_nom == station.id_nom

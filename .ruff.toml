@@ -5,7 +5,7 @@ target-version = "py310"
 fix = true
 
 # Longueur maximale d'une ligne
-line-length = 88
+line-length = 120
 
 # Règles à appliquer (sélection de base)
 lint.select = [

@@ -1,6 +1,6 @@
 from typing import Iterator, Protocol
 from .connector import Connector
-
+from returns.result import Result
 
 class DbQueries(Protocol):
 
@@ -8,11 +8,12 @@ class DbQueries(Protocol):
         """"""
         self.params = params
         self.schema = "raw"
+        self.full_table_name = None
 
-    def query_create_table(self)->str:
+    def query_create_table(self)-> str:
         """Get Query to create table"""
 
-    def query_read_table(self)->str:
+    def query_read_table(self)-> str:
         """Get Query to read table"""
 
     def query_upsert_records(self)->str:
@@ -43,24 +44,26 @@ class ConnectorDB(Connector):
         self.password = password
         self.db_queries = db_queries
 
-    def connect(self):
+    def connect(self) -> Result[str, str]:
         """Connect to Database"""
 
 
-    def create_table(self):
+    def create_table(self) -> Result[str, str]:
         """Create Table to load Data"""
 
-    def read_data(self) -> list:
+    def read_data(self) -> Result[list,str]:
         """read table"""
 
-    def upsert_records(self, records: Iterator, batch_size:int =10000):
+    def upsert_records(self,
+                       records: Iterator,
+                       batch_size:int =10000) -> Result[str,str]:
         """Upsert Data"""
 
-    def parse_data(self, records: Iterator) -> Iterator:
+    def parse_data(self, records: Iterator) -> Result[Iterator,str]:
         """parse query result into model"""
 
-    def delete_table(self):
+    def delete_table(self) -> Result[str, str]:
         """delete table (for testing)"""
 
-    def close(self):
+    def close(self) -> Result[str, str]:
         """Close connection"""

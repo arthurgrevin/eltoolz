@@ -3,6 +3,7 @@ from meteo_jobs.connector.postgres import PostgresQueriesMeteo, PostgresConnecto
 from meteo_jobs.extract import Extract
 from meteo_jobs.models import Meteo
 from meteo_jobs.logger import get_logger
+from returns.result import Success
 import pytest
 import copy
 
@@ -53,8 +54,10 @@ def test_load_meteo():
     it should be able to upsert a meteo data
     """
     meteos = iter([meteo])
-    loader.upsert_records(meteos)
-    records = list(extract.fetch_data())
+    assert isinstance(loader.upsert_records(meteos), Success)
+    results_fetch = extract.fetch_data()
+    assert isinstance(results_fetch, Success)
+    records = list(results_fetch.unwrap())
     assert len(records) == 1
 
 def test_conflict_meteo():
@@ -63,9 +66,11 @@ def test_conflict_meteo():
     meteo_new.temperature = 10.0
     meteos = iter([meteo])
     meteos_new = iter([meteo_new])
-    loader.upsert_records(meteos)
-    loader.upsert_records(meteos_new)
-    meteos_read = list(extract.parse_data(extract.fetch_data()))
+    assert isinstance(loader.upsert_records(meteos), Success)
+    assert isinstance(loader.upsert_records(meteos_new), Success)
+    results_fetch = extract.fetch_data()
+    assert isinstance(results_fetch, Success)
+    meteos_read = list(extract.parse_data(results_fetch.unwrap()))
     assert len(meteos_read) == 1
     meteo_read = meteos_read[0]
     assert meteo_read.temperature == 10.0
@@ -73,8 +78,11 @@ def test_conflict_meteo():
 def test_parse_meteo():
     """it should be able to parse meteo"""
     meteos = iter([meteo])
-    loader.upsert_records(meteos)
-    meteos = list(extract.parse_data(extract.fetch_data()))
+    assert isinstance(loader.upsert_records(meteos), Success)
+    results_fetch = extract.fetch_data()
+    assert isinstance(results_fetch, Success)
+    meteos = list(extract.parse_data(results_fetch.unwrap()))
+    logger.info(meteos)
     assert len(meteos) == 1
     meteo_read = meteos[0]
     assert meteo_read.data == meteo.data

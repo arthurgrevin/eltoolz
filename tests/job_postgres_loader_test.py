@@ -6,6 +6,7 @@ from meteo_jobs.extract import Extract
 import pytest
 import copy
 from datetime import date
+from returns.result import Success
 
 logger = get_logger(__name__)
 
@@ -46,8 +47,10 @@ def test_load_job():
     it should be able to upsert a station data
     """
     jobs = iter([job])
-    loader.upsert_records(jobs)
-    records = list(extract.fetch_data())
+    assert isinstance(loader.upsert_records(jobs), Success)
+    results_fetch = extract.fetch_data()
+    assert isinstance(results_fetch, Success)
+    records = list(results_fetch.unwrap())
     assert len(records) == 1
     job_read = records[0]
     assert job_read[2] == job.table_name
@@ -59,15 +62,23 @@ def test_load_job_twice():
     """
     job2 = copy.deepcopy(job)
     job2.options = {"new_option": "new"}
-    loader.upsert_records(iter([job]))
-    loader.upsert_records(iter([job2]))
-    records = extract.fetch_data()
+    assert isinstance(
+        loader.upsert_records(iter([job])), Success)
+    assert isinstance(loader.upsert_records(iter([job2])),
+                      Success)
+    results_fetch = extract.fetch_data()
+    assert isinstance(results_fetch, Success)
+    records = results_fetch.unwrap()
     assert len(list(records)) == 1
 
 def test_parse_job():
-    loader.upsert_records(iter([job]))
-    records = extract.fetch_data()
-    jobs = list(extract.parse_data(records))
+    assert isinstance(loader.upsert_records(iter([job])),
+                      Success)
+    results_fetch = extract.fetch_data()
+    assert isinstance(results_fetch, Success)
+    records = results_fetch.unwrap()
+    jobs = extract.parse_data(records)
+    logger.info(jobs)
     assert len(jobs) == 1
     job_fetch = jobs[0]
     logger.info(job_fetch)
