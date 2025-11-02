@@ -71,10 +71,10 @@ def test_conflict_meteo():
     assert isinstance(loader.upsert_records(meteos_new), Success)
     results_fetch = extract.fetch_data()
     assert isinstance(results_fetch, Success)
-    meteos_read = list(extract.parse_data(results_fetch.unwrap()))
+    meteos_read = list(results_fetch.unwrap())
     assert len(meteos_read) == 1
     meteo_read = meteos_read[0]
-    assert meteo_read.temperature == 10.0
+    assert meteo_read.unwrap().temperature == 10.0
 
 def test_parse_meteo():
     """it should be able to parse meteo"""
@@ -82,10 +82,11 @@ def test_parse_meteo():
     assert isinstance(loader.upsert_records(meteos), Success)
     results_fetch = extract.fetch_data()
     assert isinstance(results_fetch, Success)
-    meteos = list(extract.parse_data(results_fetch.unwrap()))
+    meteos = list(results_fetch.unwrap())
     logger.info(meteos)
     assert len(meteos) == 1
-    meteo_read = meteos[0]
+    assert isinstance(meteos[0], Success)
+    meteo_read = meteos[0].unwrap()
     assert meteo_read.data == meteo.data
     assert meteo_read.id == meteo.id
     assert meteo_read.humidite == meteo.humidite

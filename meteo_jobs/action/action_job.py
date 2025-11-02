@@ -7,7 +7,8 @@ from .action_station import ActionStation
 from meteo_jobs.load import Loader
 from meteo_jobs.extract import Extract
 from meteo_jobs.logger import get_logger
-from datetime import date
+from datetime import datetime
+from returns.result import Result, Success, Failure
 
 
 logger = get_logger(__name__)
@@ -19,19 +20,23 @@ class UpdateJob(Action):
         self.load: Loader = options["load"]
         self.extract: Extract = options["extract"]
 
-    def _update_job(self, jobs: Iterator[Job]) -> Iterator[Job]:
+    def _update_job(self, jobs: Iterator[Job]) -> Iterator:
         """Update last_compute date"""
         for job in jobs:
-            job.last_compute = date.today().strftime("%Y-%m-%d, %H:%M:%S")
-            yield
+            job.last_compute = datetime.today().strftime("%Y-%m-%d, %H:%M:%S")
+            logger.info(job.last_compute)
+            yield job
 
 
-    def execute(self, jobs: Iterator[Job]) -> Iterator[Job]:
+    def execute(self, jobs: Iterator[Job]) -> Result[str, str]:
+        """Update Jobs last_compute and upsert it"""
         updated_jobs = self._update_job(jobs)
-        self.load.create_table()
-        self.load.upsert_records(updated_jobs)
-        return updated_jobs
-
+        match self.load.upsert_records(updated_jobs):
+            case Success(s):
+                return Success(f"Update jobs, {s}")
+            case Failure(e):
+                logger.error("Error when executing UpdateJob")
+                return Failure(e)
 
 class ActionJob(Action):
     def __init__(self, options:dict):
@@ -81,12 +86,24 @@ class ActionJob(Action):
         action = self._match_action(job)
         return (load_connector,extract_connector, action)
 
+    def _filter_jobs(self,
+                     jobs_result: Iterator[Result[Job, str]])-> Iterator[Job]:
+        for result in jobs_result:
+            match result:
+                case Success(job):
+                    if job.job_id == self.job_id:
+                        yield job
+                    else:
+                        continue
+                case Failure(e):
+                    logger.error(e)
+
+
     def execute(self,
-                records: Iterator)-> Iterator[tuple[Connector, Connector, Action]]:
+                records: Iterator)-> Result[Iterator, str]:
         self.extract.connect()
-        jobs = self.extract.parse_data(
-            self.extract.read_data()
-        )
-        jobs_filtered = (job for job in jobs if job.job_id == self.job_id)
-        job = jobs_filtered[0]
-        return iter([self._match_job(job)])
+        match self.extract.fetch_data():
+            case Success(jobs):
+                return Success(self._filter_jobs(jobs))
+            case Failure(e):
+                return Failure(e)

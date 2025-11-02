@@ -43,20 +43,6 @@ def cleanup():
     loader.close()
     logger.info("After Tests")
 
-def test_load_job():
-    """
-    it should be able to upsert a station data
-    """
-    jobs = iter([job])
-    assert isinstance(loader.upsert_records(jobs), Success)
-    results_fetch = extract.fetch_data()
-    assert isinstance(results_fetch, Success)
-    records = list(results_fetch.unwrap())
-    assert len(records) == 1
-    job_read = records[0]
-    assert job_read[2] == job.table_name
-    assert job_read[6] == job.last_compute
-
 def test_load_job_twice():
     """
     it should be able to upsert a station data
@@ -77,12 +63,11 @@ def test_parse_job():
                       Success)
     results_fetch = extract.fetch_data()
     assert isinstance(results_fetch, Success)
-    records = results_fetch.unwrap()
-    jobs = extract.parse_data(records)
-    logger.info(jobs)
+    jobs = list(results_fetch.unwrap())
     assert len(jobs) == 1
-    job_fetch = jobs[0]
-    logger.info(job_fetch)
+    job_fetch_result = jobs[0]
+    assert isinstance(job_fetch_result, Success)
+    job_fetch = job_fetch_result.unwrap()
     assert job_fetch.job_name == job.job_name
     assert job_fetch.table_name == job.table_name
     assert job_fetch.last_compute == job.last_compute

@@ -3,6 +3,7 @@ from meteo_jobs.utils import EnumUtils
 from typing import Iterator
 from ..core.connector_db import DbQueries
 import json
+from returns.result import Failure, Success, Result
 
 class PostgresQueriesJob(DbQueries):
 
@@ -62,10 +63,10 @@ class PostgresQueriesJob(DbQueries):
         ]
         return values
 
-    def parse_data(self, records: Iterator) -> Iterator[Job]:
-        jobs = [
-              (
-                   Job(
+    def parse_data(self, r: tuple) -> Result[Job, str]:
+
+        try:
+            job = Job(
                         r[0],
                         EnumUtils.parse_enum(JobType, r[1]),
                         r[2],
@@ -74,8 +75,12 @@ class PostgresQueriesJob(DbQueries):
                         json.loads(r[5]),
                         r[6],
                       )
-              )
+            return Success(job)
+        except IndexError as e:
+            return Failure(f"IndexError: Incomplete line ({e})")
 
-              for r in records
-         ]
-        return jobs
+        except TypeError as e:
+            return Failure(f"TypeError: Invalid format ({e})")
+
+        except ValueError as e:
+            return Failure(f"ValueError: Invalid Data ({e})")

@@ -64,6 +64,7 @@ class PostgresConnector(ConnectorDB):
             records_upserted = 0
             while True:
                 batch = list(islice(records, batch_size))
+                logger.info(f"upsert {batch}")
                 if not batch:
                     break
                 values = self.db_queries.get_values(batch)
@@ -83,13 +84,14 @@ class PostgresConnector(ConnectorDB):
             with self.conn.cursor() as cur:
                 cur.execute(self.db_queries.query_read_table())
                 rows = cur.fetchall()
-            return Success(iter(rows))
+                parsed_rows = map(self.parse_data, iter(rows))
+            return Success(parsed_rows)
         except psycopg2.DatabaseError as e:
             logger.error(f"Error reading {self.db_queries.full_table_name}: {e}")
             return Failure(f"Error reading {self.db_queries.full_table_name}: {e}")
 
-    def parse_data(self, records: Iterator) -> Iterator:
-        return self.db_queries.parse_data(records)
+    def parse_data(self, r: tuple) -> Result:
+        return self.db_queries.parse_data(r)
 
     def delete_table(self) -> Result[str, str]:
         logger.info(self)
