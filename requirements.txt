@@ -8,3 +8,4 @@ dbt-postgres==1.9.1
 returns==0.26.0
 fastapi==0.120.0
 uvicorn==0.23.0
+httpx>=0.24.0,<1.0

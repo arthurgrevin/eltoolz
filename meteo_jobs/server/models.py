@@ -5,5 +5,5 @@ class JobRequest(BaseModel):
 
 class JobResponse(BaseModel):
     job_id: int
-    name: str
     status: str
+    name: str
