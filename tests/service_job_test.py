@@ -1,4 +1,5 @@
-from meteo_jobs.action import UpdateJob
+from meteo_jobs.action.action_station import ActionStation
+from meteo_jobs.service import ServiceJob
 from meteo_jobs.logger import get_logger
 from meteo_jobs.models import Job, JobType, LoadType, ExtractType
 from datetime import datetime
@@ -13,6 +14,7 @@ import copy
 logger = get_logger(__name__)
 
 job_connector = PostgresQueriesJob()
+
 
 connector = PostgresConnector(
         host="localhost",
@@ -30,11 +32,16 @@ date_obj = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
 
 job = Job(
         job_id=1,
-        job_name=JobType.EL_METEO,
+        job_name=JobType.EL_STATION,
         table_name="table_test",
         load_connector=LoadType.POSTGRES,
         extract_connector=ExtractType.API,
-        options= {"test":"test"},
+        options= {"api_url":"test",
+                  "db_host": "localhost",
+                  "db_port": 5432,
+                  "db_name": "meteo_db_test",
+                  "db_user": "meteo_user",
+                  "db_password": "meteo_pass"},
         last_compute=date_obj
     )
 
@@ -51,13 +58,21 @@ def cleanup():
 
 def test_updatejob():
     """it should be able to """
-    options = {
-        "extract": extract,
-        "load": loader
-    }
     job_to_update = copy.deepcopy(job)
     jobs = iter([job_to_update])
-    result = UpdateJob(options).execute(jobs)
+    service_job = ServiceJob(job.job_id, extract, loader)
+    result = service_job.update_jobs(jobs)
     assert isinstance(result, Success)
     jobs = list(extract.fetch_data().unwrap())
-    assert jobs[0].unwrap().last_compute != job.last_compute
+    assert jobs[0].last_compute != job.last_compute
+
+
+def test_get_job_action():
+    """get_job_details should return Failure when job components are not implemented."""
+
+    service_job = ServiceJob(job.job_id, extract, loader)
+    result = service_job.get_job_action(iter([job]))
+
+    assert isinstance(result, Success)
+    job_action = result.unwrap()
+    assert isinstance(job_action, ActionStation)

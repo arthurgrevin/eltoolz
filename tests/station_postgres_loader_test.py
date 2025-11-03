@@ -73,8 +73,7 @@ def test_conflict_on_upsert():
     stations = list(results_fetch.unwrap())
     assert len(stations) == 1
     logger.info(stations)
-    assert isinstance(stations[0], Success)
-    station_read = stations[0].unwrap()
+    station_read = stations[0]
     station_read.id_nom = "new"
 
 
@@ -85,8 +84,7 @@ def test_parse_station():
     assert isinstance(results_fetch, Success)
     stations = list(results_fetch.unwrap())
     assert len(stations) == 1
-    assert isinstance(stations[0], Success)
-    station_read = stations[0].unwrap()
+    station_read = stations[0]
     assert station_read.id_nom == station.id_nom
     assert station_read.id_numero == station.id_numero
     assert station_read.longitude == station.longitude

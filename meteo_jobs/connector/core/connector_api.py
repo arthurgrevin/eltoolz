@@ -6,6 +6,9 @@ from returns.result import Result, Success, Failure
 
 logger = get_logger(__name__)
 
+class ParseCSVError(Exception):
+    pass
+
 class ConnectorAPI(Connector):
 
     def __init__(self, api_url: str):

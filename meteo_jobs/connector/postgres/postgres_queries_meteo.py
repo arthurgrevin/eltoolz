@@ -1,7 +1,6 @@
 from meteo_jobs.models import Meteo
 from typing import Iterator
 from ..core.connector_db import DbQueries
-from returns.result import Failure, Result, Success
 
 class PostgresQueriesMeteo(DbQueries):
 
@@ -102,10 +101,9 @@ class PostgresQueriesMeteo(DbQueries):
 
 
 
-    def parse_data(self, r: tuple) -> Result[Meteo, str]:
+    def parse_data(self, r: tuple) -> Meteo:
         """Construit un objet Meteo à partir d'une ligne, ou renvoie une erreur."""
-        try:
-            meteo = Meteo(
+        meteo = Meteo(
                 r[0],
                 r[1],
                 r[9],
@@ -120,15 +118,5 @@ class PostgresQueriesMeteo(DbQueries):
                 r[7],
                 r[8],
                 r[12],
-                r[13],
-            )
-            return Success(meteo)
-
-        except IndexError as e:
-            return Failure(f"IndexError: Incomplete line ({e})")
-
-        except TypeError as e:
-            return Failure(f"TypeError: Invalid format ({e})")
-
-        except ValueError as e:
-            return Failure(f"ValueError: Invalid Data ({e})")
+                r[13])
+        return meteo

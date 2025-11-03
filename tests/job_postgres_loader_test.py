@@ -65,9 +65,7 @@ def test_parse_job():
     assert isinstance(results_fetch, Success)
     jobs = list(results_fetch.unwrap())
     assert len(jobs) == 1
-    job_fetch_result = jobs[0]
-    assert isinstance(job_fetch_result, Success)
-    job_fetch = job_fetch_result.unwrap()
+    job_fetch = jobs[0]
     assert job_fetch.job_name == job.job_name
     assert job_fetch.table_name == job.table_name
     assert job_fetch.last_compute == job.last_compute

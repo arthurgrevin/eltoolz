@@ -25,7 +25,7 @@ class DbQueries(Protocol):
     def query_delete_table(self)->str:
         """delete table"""
 
-    def parse_data(self, r: tuple) -> Result:
+    def parse_data(self, r: tuple):
         """parse query result into model"""
 
 class ConnectorDB(Connector):

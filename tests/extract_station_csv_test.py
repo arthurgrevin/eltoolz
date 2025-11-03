@@ -15,9 +15,7 @@ def test_parse_station_csv():
     "it should be able to parse into a Station model"
     stations = extract.fetch_data()
     assert isinstance(stations, Success)
-    result_station = next(stations.unwrap())
-    assert isinstance(result_station, Success)
-    station = result_station.unwrap()
+    station = next(stations.unwrap())
     assert isinstance(station,Station)
     assert station.id_nom is not None
     assert station.id_numero is not None
