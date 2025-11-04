@@ -101,22 +101,23 @@ class PostgresQueriesMeteo(DbQueries):
 
 
 
-    def parse_data(self, r: tuple) -> Meteo:
+    def parse_data(self, records: Iterator) -> Iterator[Meteo]:
         """Construit un objet Meteo à partir d'une ligne, ou renvoie une erreur."""
-        meteo = Meteo(
-                r[0],
-                r[1],
-                r[9],
-                r[3],
-                r[10],
-                r[4],
-                r[11],
-                r[2],
-                r[5],
-                r[14],
-                r[6],
-                r[7],
-                r[8],
-                r[12],
-                r[13])
-        return meteo
+        for r in records:
+            meteo = Meteo(
+                    r[0],
+                    r[1],
+                    r[9],
+                    r[3],
+                    r[10],
+                    r[4],
+                    r[11],
+                    r[2],
+                    r[5],
+                    r[14],
+                    r[6],
+                    r[7],
+                    r[8],
+                    r[12],
+                    r[13])
+            yield meteo

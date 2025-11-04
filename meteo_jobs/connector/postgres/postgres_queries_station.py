@@ -76,8 +76,9 @@ class PostgresQueriesStation(DbQueries):
             ]
             return values
 
-    def parse_data(self, r: tuple)-> Station:
-        station = Station(r[0], r[1], r[2], r[3], r[4],
-                        r[5], r[6], r[7], r[8], r[9], r[10],
-                        r[11],  r[12])
-        return station
+    def parse_data(self, r: Iterator) -> Iterator[Station]:
+        for record in r:
+            station = Station(record[0], record[1], record[2], record[3], record[4],
+                              record[5], record[6], record[7], record[8], record[9], record[10],
+                              record[11], record[12])
+            yield station

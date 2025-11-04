@@ -84,14 +84,14 @@ class PostgresConnector(ConnectorDB):
             with self.conn.cursor() as cur:
                 cur.execute(self.db_queries.query_read_table())
                 rows = cur.fetchall()
-                parsed_rows = map(self.parse_data, iter(rows))
+                parsed_rows = self.parse_data(rows)
             return Success(parsed_rows)
         except psycopg2.DatabaseError as e:
             logger.error(f"Error reading {self.db_queries.full_table_name}: {e}")
             return Failure(f"Error reading {self.db_queries.full_table_name}: {e}")
 
-    def parse_data(self, r: tuple) -> Result:
-        return self.db_queries.parse_data(r)
+    def parse_data(self, records: Iterator) -> Iterator:
+        return self.db_queries.parse_data(records)
 
     def delete_table(self) -> Result[str, str]:
         logger.info(self)

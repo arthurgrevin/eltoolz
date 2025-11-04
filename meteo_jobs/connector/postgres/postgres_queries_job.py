@@ -62,14 +62,15 @@ class PostgresQueriesJob(DbQueries):
         ]
         return values
 
-    def parse_data(self, r: tuple) -> Job:
-        job = Job(
-                        r[0],
-                        EnumUtils.parse_enum(JobType, r[1]),
-                        r[2],
-                        EnumUtils.parse_enum(LoadType, r[3]),
-                        EnumUtils.parse_enum(ExtractType, r[4]),
-                        json.loads(r[5]),
-                        r[6],
-                      )
-        return job
+    def parse_data(self, r: Iterator) -> Iterator[Job]:
+        for record in r:
+            job = Job(
+                record[0],
+                EnumUtils.parse_enum(JobType, record[1]),
+                record[2],
+                EnumUtils.parse_enum(LoadType, record[3]),
+                EnumUtils.parse_enum(ExtractType, record[4]),
+                json.loads(record[5]),
+                record[6],
+            )
+            yield job

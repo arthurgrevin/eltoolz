@@ -3,7 +3,7 @@ from returns.result import Result
 
 class Connector(Protocol):
 
-    def read_data(self) -> Result:
+    def read_data(self) -> Result[Iterator, str]:
         """read table"""
 
     def parse_data(self, records: Iterator) -> Iterator:

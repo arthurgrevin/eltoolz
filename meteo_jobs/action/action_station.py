@@ -17,34 +17,36 @@ class ActionStation(Action):
         self.extract:Extract = options["extract"]
 
     def execute(self, _: Iterator[Station]) -> Result[str, str]:
-        match self.load.connect():
-            case Success():
-                pass
-            case Failure(e):
-                logger.error(f"Error connecting to load: {e}")
-                return Failure(f"Error connecting to load: {e}")
-        match self.load.create_table():
-            case Success():
-                pass
-            case Failure(e):
-                logger.error(f"Error creating table in load: {e}")
-                return Failure(f"Error creating table in load: {e}")
-        match self.extract.fetch_data():
-            case Success(stations):
-                logger.info("Data fetched successfully")
-                pass
-            case Failure(e):
-                logger.error(f"Error fetching data: {e}")
-                return Failure(f"Error fetching data: {e}")
-        match self.load.upsert_records(stations):
-            case Success(msg):
-                logger.info(msg)
-            case Failure(e):
-                logger.error(f"Error upserting records: {e}")
-                return Failure(f"Error upserting records: {e}")
-        match self.load.close():
-            case Success():
-                return Success("Action executed successfully")
-            case Failure(e):
-                logger.error(f"Error closing load: {e}")
-                return Failure(f"Error closing load: {e}")
+        try:
+            match self.load.connect():
+                case Success():
+                    pass
+                case Failure(e):
+                    logger.error(f"Error connecting to load: {e}")
+                    return Failure(f"Error connecting to load: {e}")
+            match self.load.create_table():
+                case Success():
+                    pass
+                case Failure(e):
+                    logger.error(f"Error creating table in load: {e}")
+                    return Failure(f"Error creating table in load: {e}")
+            match self.extract.fetch_data():
+                    case Success(stations):
+                        logger.info("Data fetched successfully")
+                        pass
+                    case Failure(e):
+                        logger.error(f"Error fetching data: {e}")
+                        return Failure(f"Error fetching data: {e}")
+            match self.load.upsert_records(stations):
+                case Success(msg):
+                    logger.info(msg)
+                case Failure(e):
+                    logger.error(f"Error upserting records: {e}")
+                    return Failure(f"Error upserting records: {e}")
+        finally:
+            match self.load.close():
+                case Success():
+                    return Success("Action executed successfully")
+                case Failure(e):
+                    logger.error(f"Error closing load: {e}")
+                    return Failure(f"Error closing load: {e}")

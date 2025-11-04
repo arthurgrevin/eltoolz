@@ -106,27 +106,36 @@ class ServiceJob:
                 case Failure(e):
                     logger.error(e)
 
+
     def _get_jobs_by_ids(self, job_id: int) -> Result[Iterator[Job], str]:
-        self.extract.connect()
         match self.extract.fetch_data():
             case Success(jobs):
                 for job in jobs:
                     if job.job_id == job_id:
+                        self.extract.close()
                         return Success(iter([job]))
                 return Failure(f"Job with id {job_id} not found")
             case Failure(e):
                 return Failure(e)
 
     def get_job_action(self, _: Iterator) -> Result[Action, str]:
-        job_result = self._get_jobs_by_ids(self.job_id)
-        match job_result:
-            case Success(jobs):
-                job = next(jobs)
-                return self._match_job(job)
-            case Failure(e):
-                return Failure(f"Error fetching job with id {self.job_id}: {e}")
-            case _:
-                return Failure("Unknown error occurred while fetching job")
+        try:
+            match self.extract.connect():
+                case Success():
+                    pass
+                case Failure(e):
+                    return Failure(f"Error connecting to extract: {e}")
+            job_result = self._get_jobs_by_ids(self.job_id)
+            match job_result:
+                case Success(jobs):
+                    job = next(jobs)
+                    return self._match_job(job)
+                case Failure(e):
+                    return Failure(f"Error fetching job with id {self.job_id}: {e}")
+                case _:
+                    return Failure("Unknown error occurred while fetching job")
+        finally:
+            self.extract.close()
 
 
 

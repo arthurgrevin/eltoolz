@@ -25,7 +25,7 @@ class DbQueries(Protocol):
     def query_delete_table(self)->str:
         """delete table"""
 
-    def parse_data(self, r: tuple):
+    def parse_data(self, r: Iterator)-> Iterator:
         """parse query result into model"""
 
 class ConnectorDB(Connector):
@@ -51,7 +51,7 @@ class ConnectorDB(Connector):
     def create_table(self) -> Result[str, str]:
         """Create Table to load Data"""
 
-    def read_data(self) -> Result[list,str]:
+    def read_data(self) -> Result[Iterator,str]:
         """read table"""
 
     def upsert_records(self,

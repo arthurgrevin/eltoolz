@@ -18,6 +18,6 @@ def test_parse_meteo_csv():
     meteos = extract.fetch_data()
     assert isinstance(meteos, Success)
     meteo = next(meteos.unwrap())
-    assert isinstance(meteo,Meteo)
+    assert isinstance(meteo, Meteo)
     assert meteo.data is not None
     assert meteo.id is not None
