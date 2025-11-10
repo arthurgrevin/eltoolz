@@ -34,6 +34,7 @@ class PostgresConnector(ConnectorDB):
                 user=self.user,
                 password=self.password
             )
+            logger.info(f"Connected to Postgres {self.host}:{self.port} on {self.dbname} using {self.user}")
             return Success(f"""
                 Connect to Postgres {self.host}:{self.port} on {self.dbname} using {self.user}
             """)
@@ -57,6 +58,7 @@ class PostgresConnector(ConnectorDB):
         Upsert records
         :param records: iterator
         """
+        logger.info(f"connection state {self.conn}")
         try:
             if not records:
                 logger.info("No records to upsert, records is empty")
@@ -107,6 +109,8 @@ class PostgresConnector(ConnectorDB):
     def close(self) -> Result[str, str]:
         """Close Database connection"""
         try:
+            if self.conn is None:
+                return Success("Connexion to postgres already closed")
             self.conn.close()
             logger.info("Connexion PostgreSQL closed")
             return Success("Connexion to postgres closed")

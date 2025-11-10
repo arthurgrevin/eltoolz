@@ -9,7 +9,7 @@ from returns.result import Success, Failure, Result
 
 logger = get_logger(__name__)
 
-class ActionStation(Action):
+class ActionELStation(Action):
 
     def __init__(self, options: dict):
         """"""
@@ -50,3 +50,32 @@ class ActionStation(Action):
                 case Failure(e):
                     logger.error(f"Error closing load: {e}")
                     return Failure(f"Error closing load: {e}")
+
+class ActionExtractMeteo(Action):
+
+    def __init__(self, options: dict):
+        """"""
+        self.extract:Extract = options["extract"]
+
+    def execute(self, _: Iterator[Station]) -> Result[Iterator, str]:
+        try:
+            match self.extract.connect():
+                case Success():
+                    pass
+                case Failure(e):
+                    logger.error(f"Error connecting to extract: {e}")
+                    return Failure(f"Error connecting to extract: {e}")
+            match self.extract.fetch_data():
+                case Success(stations):
+                    logger.info("Data fetched successfully")
+                    return Success(stations)
+                case Failure(e):
+                    logger.error(f"Error fetching data: {e}")
+                    return Failure(f"Error fetching data: {e}")
+        finally:
+            match self.extract.close():
+                case Success():
+                    pass
+                case Failure(e):
+                    logger.error(f"Error closing extract: {e}")
+        return Failure("Unknown error in execute extract action")

@@ -34,15 +34,17 @@ def get_postgres_connector():
 
 
 @router.post("/job", response_model=JobResponse)
-def get_job(request: JobRequest,
+def post_job(request: JobRequest,
              connector: PostgresConnector = Depends(get_postgres_connector)):
+    job_id = request.job_id
     loader = Loader(connector)
     extract = Extract(connector)
-    job_service = ServiceJob(request.job_id, extract, loader)
-    match job_service.get_job_action(iter([])):
+    job_service = ServiceJob(extract, loader)
+    match job_service.get_job_action(job_id):
         case Success(action):
             logger.info(f"starting action {action}")
             action.execute(iter([]))
+            job_service.update_job(job_id)
             return JSONResponse(content= {"job_id":request.job_id}, status_code=200)
         case Failure(e):
             return JSONResponse(content={"msg": e}, status_code=400)

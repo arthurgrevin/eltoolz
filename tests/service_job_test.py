@@ -1,4 +1,4 @@
-from meteo_jobs.action.action_station import ActionStation
+from meteo_jobs.action.action_station import ActionELStation
 from meteo_jobs.service import ServiceJob
 from meteo_jobs.logger import get_logger
 from meteo_jobs.models import Job, JobType, LoadType, ExtractType
@@ -59,20 +59,19 @@ def cleanup():
 def test_updatejob():
     """it should be able to """
     job_to_update = copy.deepcopy(job)
-    jobs = iter([job_to_update])
-    service_job = ServiceJob(job.job_id, extract, loader)
-    result = service_job.update_jobs(jobs)
+    service_job = ServiceJob(extract, loader)
+    result = service_job.update_job(job_to_update.job_id)
     assert isinstance(result, Success)
-    jobs = list(extract.fetch_data().unwrap())
+    jobs = list(service_job.get_jobs().unwrap())
     assert jobs[0].last_compute != job.last_compute
 
 
 def test_get_job_action():
     """get_job_details should return Failure when job components are not implemented."""
 
-    service_job = ServiceJob(job.job_id, extract, loader)
-    result = service_job.get_job_action(iter([job]))
+    service_job = ServiceJob(extract, loader)
+    result = service_job.get_job_action(job.job_id)
 
     assert isinstance(result, Success)
     job_action = result.unwrap()
-    assert isinstance(job_action, ActionStation)
+    assert isinstance(job_action, ActionELStation)
