@@ -1,3 +1,5 @@
+from meteo_jobs.models.connector_type import ExtractType, LoadType
+from meteo_jobs.models.job import Job, JobType
 from .action import Action
 from typing import Iterator
 from meteo_jobs.models import Station
@@ -56,6 +58,19 @@ class ActionExtractMeteo(Action):
     def __init__(self, options: dict):
         """"""
         self.extract:Extract = options["extract"]
+        self.load: Loader = options["load"]
+        self.options_db = options["options_db"]
+
+    def _create_jobs_from_stations(self, stations_names: Iterator[str]) -> Iterator[Job]:
+        for station_name in stations_names:
+            yield Job(
+                job_name= JobType.EL_METEO,
+                table_name=f"meteo_{station_name}",
+                load_connector=LoadType.POSTGRES,
+                extract_connector=ExtractType.API,
+                options=self.options_db,
+                last_compute=None
+            )
 
     def execute(self, _: Iterator[Station]) -> Result[Iterator, str]:
         try:
@@ -72,6 +87,23 @@ class ActionExtractMeteo(Action):
                 case Failure(e):
                     logger.error(f"Error fetching data: {e}")
                     return Failure(f"Error fetching data: {e}")
+            stations_name = map(lambda station: station.id_nom, stations)
+            logger.info(f"Stations extracted: {list(stations_name)}")
+            jobs = self._create_jobs_from_stations(stations_name)
+            match self.load.connect():
+                case Success():
+                    pass
+                case Failure(e):
+                    logger.error(f"Error connecting to load: {e}")
+                    return Failure(f"Error connecting to load: {e}")
+            match self.load.upsert_records(jobs):
+                case Success(msg):
+                    logger.info(msg)
+                    return Success(jobs)
+                case Failure(e):
+                    logger.error(f"Error upserting jobs: {e}")
+                    return Failure(f"Error upserting jobs: {e}")
+
         finally:
             match self.extract.close():
                 case Success():
