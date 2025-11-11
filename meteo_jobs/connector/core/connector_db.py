@@ -44,26 +44,14 @@ class ConnectorDB(Connector):
         self.password = password
         self.db_queries = db_queries
 
-    def connect(self) -> Result[str, str]:
-        """Connect to Database"""
-
-
     def create_table(self) -> Result[str, str]:
         """Create Table to load Data"""
 
-    def read_data(self) -> Result[Iterator,str]:
-        """read table"""
 
     def upsert_records(self,
                        records: Iterator,
                        batch_size:int =10000) -> Result[str,str]:
         """Upsert Data"""
 
-    def parse_data(self, records: Iterator) -> Result[Iterator,str]:
-        """parse query result into model"""
-
     def delete_table(self) -> Result[str, str]:
         """delete table (for testing)"""
-
-    def close(self) -> Result[str, str]:
-        """Close connection"""

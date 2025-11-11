@@ -82,6 +82,9 @@ class PostgresConnector(ConnectorDB):
 
 
     def read_data(self) -> Result[Iterator, str]:
+        if self.conn is None:
+            logger.error("Attempt to read_data without an active DB connection")
+            return Failure("Not connected to Postgres")
         try:
             with self.conn.cursor() as cur:
                 cur.execute(self.db_queries.query_read_table())
