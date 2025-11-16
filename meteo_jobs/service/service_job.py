@@ -1,4 +1,7 @@
 from returns.result import Result, Success, Failure
+from meteo_jobs.action.action_station import ActionExtractMeteo
+from meteo_jobs.connector.postgres.postgres_queries_job import PostgresQueriesJob
+from meteo_jobs.connector.postgres.postgres_queries_meteo import PostgresQueriesMeteo
 from meteo_jobs.extract.extract_meteo_csv import ExtractMeteoDataCSV
 from meteo_jobs.load import Loader
 from meteo_jobs.extract import Extract, ExtractStationDataCSV
@@ -19,9 +22,35 @@ class ServiceJob:
         self.loader = loader
 
 
+    def _retrieve_db_options(self,
+                             options: dict,
+                             jobtype: JobType,
+                             extract: bool) -> Result[Connector, str]:
+        """
+        Retrieve DB options from job options
+        :param options: job options"""
+        db_queries_dict = {JobType.EL_STATION: PostgresQueriesStation,
+                      JobType.ADD_METEO_JOB: PostgresQueriesStation if extract else PostgresQueriesJob,
+                      JobType.EL_METEO: PostgresQueriesMeteo}
+        try:
+            host = options["db_host"]
+            port = options["db_port"]
+            dbname = options["db_name"]
+            user = options["db_user"]
+            password = options["db_password"]
+            params = options["params"] if "params" in options else {}
+            logger.info(f"params {params}")
+            return Success(PostgresConnector(
+                host, port, dbname, user, password,
+                 db_queries_dict[jobtype](params)))
+        except KeyError as e:
+            return Failure(f"Missing key in job options: {e}")
+
+
     def _match_action(self, job_type: JobType,
                       extract_connector: Connector,
-                      load_connector: Connector)-> Result[Action, str]:
+                      load_connector: Connector,
+                      options: dict = {})-> Result[Action, str]:
         match job_type:
             case JobType.EL_STATION:
                 return Success(ActionELStation({"extract": Extract(extract_connector),
@@ -29,6 +58,10 @@ class ServiceJob:
             case JobType.EL_METEO:
                 return Success(ActionELMeteo({"extract": Extract(extract_connector),
                                               "load":Loader(load_connector)}))
+            case JobType.ADD_METEO_JOB:
+                return Success(ActionExtractMeteo({"extract": Extract(extract_connector),
+                                              "load":Loader(load_connector),
+                                              "options_db": options}))
             case _ :
                 return Failure("Action Not Implemented")
 
@@ -41,45 +74,35 @@ class ServiceJob:
                 except KeyError as e:
                     return Failure(f"Missing key in job options: {e}")
             case (JobType.EL_STATION, ExtractType.POSTGRES):
-                return Success(PostgresConnector(
-                    host=job.options["db_host"],
-                    port=job.options["db_port"],
-                    dbname=job.options["db_name"],
-                    user=job.options["db_user"],
-                    password=job.options["db_password"],
-                    queries=PostgresQueriesStation()
-                ))
+                return self._retrieve_db_options(job.options, job.job_name, True)
+            case (JobType.ADD_METEO_JOB, ExtractType.POSTGRES):
+                return self._retrieve_db_options(job.options, job.job_name, True)
             case (JobType.EL_METEO, ExtractType.API):
                 try:
                     api_url = job.options["api_url"]
                     return Success(ExtractMeteoDataCSV(api_url))
                 except KeyError as e:
                     return Failure(f"Missing key in job options: {e}")
-            case (JobType.EL_METEO, ExtractType.POSTGRES):
+            case _:
                 return Failure("Extract Connector Not Implemented")
-
-    def _retrieve_db_options(self, options: dict) -> Result[Connector, str]:
-        """
-        Retrieve DB options from job options
-        :param options: job options"""
-        try:
-            host = options["db_host"]
-            port = options["db_port"]
-            dbname = options["db_name"]
-            user = options["db_user"]
-            password = options["db_password"]
-            return Success(PostgresConnector(
-                host, port, dbname, user, password, PostgresQueriesStation()))
-        except KeyError as e:
-            return Failure(f"Missing key in job options: {e}")
 
     def _match_load_connector(self, job: Job) -> Result[Connector, str]:
         logger.info(f"Matching load connector {job.job_name},{job.load_connector}")
         match (job.job_name, job.load_connector):
             case (JobType.EL_STATION, LoadType.POSTGRES):
-                return self._retrieve_db_options(job.options)
+                return self._retrieve_db_options(job.options, job.job_name, False)
             case (JobType.EL_METEO, LoadType.POSTGRES):
-                return self._retrieve_db_options(job.options)
+                return self._retrieve_db_options(job.options, job.job_name, False)
+            case (JobType.ADD_METEO_JOB, LoadType.POSTGRES):
+                return self._retrieve_db_options(job.options, job.job_name, False)
+            case _:
+                return Failure("Load Connector Not Implemented")
+
+    def _get_job_options(self, job: Job) -> dict:
+        """Extract addition job options"""
+        if "job_params" in job.options:
+            return job.options["job_params"]
+        return {}
 
     def _match_job(self,job: Job) -> Result[Action, str]:
         match self._match_extract_connector(job):
@@ -96,7 +119,10 @@ class ServiceJob:
                 return Failure(e)
             case _:
                 return Failure("Unknown error in load connector")
-        match self._match_action(job.job_name, extract_connector, load_connector):
+        match self._match_action(job.job_name,
+                                 extract_connector,
+                                 load_connector,
+                                 self._get_job_options(job)):
             case Success(action):
                 pass
             case Failure(e):
@@ -144,7 +170,7 @@ class ServiceJob:
                     logger.info(f"Job found: {job}")
                     return self._match_job(job)
                 case Failure(e):
-                    return Failure(f"Error fetching job with id {self.job_id}: {e}")
+                    return Failure(f"Error fetching job with id {job_id}: {e}")
                 case _:
                     return Failure("Unknown error occurred while fetching job")
         finally:

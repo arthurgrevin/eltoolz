@@ -61,7 +61,7 @@ class ActionExtractMeteo(Action):
         self.load: Loader = options["load"]
         self.options_db = options["options_db"]
 
-    def _create_jobs_from_stations(self, stations_names: Iterator[str]) -> Iterator[Job]:
+    def create_jobs_from_stations(self, stations_names: Iterator[str]) -> Iterator[Job]:
         for station_name in stations_names:
             yield Job(
                 job_name= JobType.EL_METEO,
@@ -89,7 +89,7 @@ class ActionExtractMeteo(Action):
                     return Failure(f"Error fetching data: {e}")
             stations_name = map(lambda station: station.id_nom, stations)
             logger.info(f"Stations extracted: {list(stations_name)}")
-            jobs = self._create_jobs_from_stations(stations_name)
+            jobs = self.create_jobs_from_stations(stations_name)
             match self.load.connect():
                 case Success():
                     pass
