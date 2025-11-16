@@ -6,7 +6,7 @@ from meteo_jobs.models import Meteo
 
 class ExtractMeteoDataCSV(ConnectorAPI):
 
-    def __init__(self, api_url: str, is_stream: bool, options: dict = {}):
+    def __init__(self, api_url: str, is_stream: bool = True, options: dict = {}):
         super().__init__(api_url)
         self.is_stream = is_stream
         self.options = options

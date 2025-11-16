@@ -24,7 +24,7 @@ loader = Loader(connector)
 extract = Extract(connector)
 
 job = Job(
-        job_id=None,
+        job_id=1,
         job_name=JobType.EL_METEO,
         table_name="table_test",
         load_connector=LoadType.POSTGRES,

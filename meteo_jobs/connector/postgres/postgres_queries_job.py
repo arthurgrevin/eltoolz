@@ -6,9 +6,10 @@ import json
 
 class PostgresQueriesJob(DbQueries):
 
-    def __init__(self):
+    def __init__(self, params: dict = {}):
         super().__init__()
         self.full_table_name = "core.job"
+        self.params = params
 
     def query_delete_table(self)->str:
         return f"DROP TABLE IF EXISTS {self.full_table_name}"
@@ -23,7 +24,7 @@ class PostgresQueriesJob(DbQueries):
                             extract_connector VARCHAR(255),
                             options TEXT,
                             last_compute VARCHAR(255),
-                            UNIQUE(job_name, table_name)
+                            UNIQUE(job_id)
                         );
                 """
 
@@ -33,6 +34,7 @@ class PostgresQueriesJob(DbQueries):
     def query_upsert_records(self):
         return f"""
     INSERT INTO {self.full_table_name}(
+            job_id,
             job_name,
             table_name,
             load_connector,
@@ -41,16 +43,18 @@ class PostgresQueriesJob(DbQueries):
             last_compute
         )
         VALUES %s
-        ON CONFLICT (job_name,table_name) DO UPDATE SET
+        ON CONFLICT (job_id) DO UPDATE SET
+            job_name = EXCLUDED.job_name,
+            table_name = EXCLUDED.table_name,
             last_compute = EXCLUDED.last_compute,
             load_connector = EXCLUDED.load_connector,
             extract_connector = EXCLUDED.extract_connector,
             options = EXCLUDED.options
-
-"""
+            """
     def get_values(self, records: Iterator[Job]) -> list:
         values = [
             (
+                r.job_id,
                 r.job_name.value,
                 r.table_name,
                 r.load_connector.value,

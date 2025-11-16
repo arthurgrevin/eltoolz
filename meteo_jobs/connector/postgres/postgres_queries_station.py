@@ -3,9 +3,10 @@ from typing import Iterator
 from ..core.connector_db import DbQueries
 
 class PostgresQueriesStation(DbQueries):
-    def __init__(self):
+    def __init__(self, params: dict = {}):
          super().__init__()
          self.full_table_name = f"{self.schema}.station"
+         self.params = params
 
     def query_create_table(self):
         return f"""

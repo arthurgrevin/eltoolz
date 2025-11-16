@@ -10,7 +10,7 @@ class JobType(Enum):
 
 @dataclass
 class Job:
-    job_id: int | None
+    job_id: int
     job_name: JobType
     table_name: str
     load_connector: LoadType
