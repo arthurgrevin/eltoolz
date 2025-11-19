@@ -5,26 +5,40 @@ from meteo_jobs.logger import get_logger
 from meteo_jobs.extract import Extract
 import pytest
 import copy
+import uuid
 from datetime import date
 from returns.result import Success
 
 logger = get_logger(__name__)
 
-job_connector = PostgresQueriesJob()
 
-connector = PostgresConnector(
+@pytest.fixture()
+def connector():
+    c = PostgresConnector(
         host="localhost",
         port=5432,
         dbname="meteo_db_test",
         user="meteo_user",
         password="meteo_pass",
-        db_queries= PostgresQueriesJob()
+        db_queries=PostgresQueriesJob()
     )
-loader = Loader(connector)
-extract = Extract(connector)
+    c.connect()
+    yield c
+    c.close()
+
+@pytest.fixture()
+def loader(connector):
+    load = Loader(connector)
+    load.delete_table()
+    load.create_table()
+    return load
+
+@pytest.fixture()
+def extract(connector):
+    return Extract(connector)
 
 job = Job(
-        job_id=1,
+        job_id=str(uuid.uuid4()),
         job_name=JobType.EL_METEO,
         table_name="table_test",
         load_connector=LoadType.POSTGRES,
@@ -33,19 +47,16 @@ job = Job(
         last_compute=date.today().strftime("%Y-%m-%d, %H:%M:%S")
     )
 
-@pytest.fixture(scope="module", autouse=True)
-def cleanup():
+@pytest.fixture(scope="function", autouse=True)
+def cleanup(loader):
     logger.info("Setup  before tests")
-    loader.connect()
-    loader.delete_table()
-    loader.create_table()
     yield
     loader.close()
     logger.info("After Tests")
 
-def test_load_job_twice():
+def test_load_job_twice(extract, loader):
     """
-    it should be able to upsert a station data
+    it should be able to upsert a job twice
     """
     job2 = copy.deepcopy(job)
     job2.options = {"new_option": "new"}
@@ -58,7 +69,7 @@ def test_load_job_twice():
     records = results_fetch.unwrap()
     assert len(list(records)) == 1
 
-def test_parse_job():
+def test_parse_job(extract, loader):
     assert isinstance(loader.upsert_records(iter([job])),
                       Success)
     results_fetch = extract.fetch_data()

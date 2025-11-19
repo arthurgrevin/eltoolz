@@ -10,6 +10,7 @@ from meteo_jobs.connector.postgres import PostgresConnector, PostgresQueriesJob
 import pytest
 from returns.result import Success
 import copy
+import uuid
 
 
 logger = get_logger(__name__)
@@ -32,7 +33,7 @@ date_str = "2025-11-02 14:30:00"
 date_obj = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
 
 job_el_station = Job(
-        job_id=1,
+        job_id=str(uuid.uuid4()),
         job_name=JobType.EL_STATION,
         table_name="table_test",
         load_connector=LoadType.POSTGRES,
@@ -47,7 +48,7 @@ job_el_station = Job(
     )
 
 job_el_meteo = Job(
-        job_id=2,
+        job_id=str(uuid.uuid4()),
         job_name=JobType.EL_METEO,
         table_name="meteo_station1",
         load_connector=LoadType.POSTGRES,
@@ -64,7 +65,7 @@ job_el_meteo = Job(
     )
 
 job_extract_meteo = Job(
-        job_id=3,
+        job_id=str(uuid.uuid4()),
         job_name=JobType.ADD_METEO_JOB,
         table_name="meteo_station1",
         load_connector=LoadType.POSTGRES,
