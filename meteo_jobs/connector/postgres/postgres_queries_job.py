@@ -17,7 +17,7 @@ class PostgresQueriesJob(DbQueries):
     def query_create_table(self):
         return f"""
                 CREATE TABLE IF NOT EXISTS {self.full_table_name} (
-                            job_id SERIAL PRIMARY KEY,
+                            job_id UUID PRIMARY KEY,
                             job_name VARCHAR(255),
                             table_name VARCHAR(255),
                             load_connector VARCHAR(255),
@@ -49,7 +49,7 @@ class PostgresQueriesJob(DbQueries):
             last_compute = EXCLUDED.last_compute,
             load_connector = EXCLUDED.load_connector,
             extract_connector = EXCLUDED.extract_connector,
-            options = EXCLUDED.options
+            options = EXCLUDED.options;
             """
     def get_values(self, records: Iterator[Job]) -> list:
         values = [

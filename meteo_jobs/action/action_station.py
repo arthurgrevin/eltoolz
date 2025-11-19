@@ -7,6 +7,8 @@ from meteo_jobs.load import Loader
 from meteo_jobs.extract import Extract
 from meteo_jobs.logger import get_logger
 from returns.result import Success, Failure, Result
+import uuid
+import copy
 
 
 logger = get_logger(__name__)
@@ -61,14 +63,22 @@ class ActionExtractMeteo(Action):
         self.load: Loader = options["load"]
         self.options_db = options["options_db"]
 
+
+    def _get_api_url(self, station):
+        return f"https://data.toulouse-metropole.fr/api/explore/v2.1/catalog/datasets/{station}/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B"
+
     def create_jobs_from_stations(self, stations_names: Iterator[str]) -> Iterator[Job]:
         for station_name in stations_names:
+            api_station = self._get_api_url(station_name)
+            option_job = copy.deepcopy(self.options_db)
+            option_job["api_url"] = api_station
             yield Job(
+                job_id= str(uuid.uuid4()),
                 job_name= JobType.EL_METEO,
                 table_name=f"meteo_{station_name}",
                 load_connector=LoadType.POSTGRES,
                 extract_connector=ExtractType.API,
-                options=self.options_db,
+                options=option_job,
                 last_compute=None
             )
 
@@ -83,12 +93,11 @@ class ActionExtractMeteo(Action):
             match self.extract.fetch_data():
                 case Success(stations):
                     logger.info("Data fetched successfully")
-                    return Success(stations)
+                    pass
                 case Failure(e):
                     logger.error(f"Error fetching data: {e}")
                     return Failure(f"Error fetching data: {e}")
             stations_name = map(lambda station: station.id_nom, stations)
-            logger.info(f"Stations extracted: {list(stations_name)}")
             jobs = self.create_jobs_from_stations(stations_name)
             match self.load.connect():
                 case Success():
