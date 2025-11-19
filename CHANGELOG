@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+## [0.2]
+
+### Added
+
 - add logger
 - Transform: add schema in postgres connector (raw, marts)
 - Transform: add Dbt, staging/station model
@@ -16,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refact: Create Connector Protocol
 - Create ExtractType, LoadType, JobType for Job
 - Add returns Result type
+- Add Orcherstator and Worker
+- Create Action to EL Station and Meteo
 
 
 ### Changed
